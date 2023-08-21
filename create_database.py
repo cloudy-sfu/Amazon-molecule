@@ -1,5 +1,5 @@
 """
-Convert dataset from BVOCsATTO_betaVersion.csv to sqlite3 database.
+Convert dataset from `BVOCsATTO_betaVersion.csv` to `ATTO.db`.
 """
 import sqlite3
 import pandas as pd
