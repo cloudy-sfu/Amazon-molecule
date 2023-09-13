@@ -1,0 +1,2 @@
+source ~/.virtualenvs/amazon_molecular/bin/activate
+cd ~/amazon_molecular/

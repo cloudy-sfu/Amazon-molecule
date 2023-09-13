@@ -1,12 +1,12 @@
-# GC-ATTO-PTRMS
+# GC ATTO PTRMS
 
 Granger causality inference of PTR-MS measurement from ATTO project
 
-![](https://shields.io/badge/dependencies-Python_3.11-blue)
+![](https://shields.io/badge/dependencies-Python_3.11-blue?style=flat-square)
 
 ## Datasets
 
-### (1) `ATTO.db` Database
+### ATTO database
 
 **PTRMS**
 
@@ -37,7 +37,7 @@ Limit of detection (profile 3.5min)
 | timestamp_to   | integer | s     | UNIX timestamp. It corresponds to the end of applied limit of detection in `value` column. |
 | value          | real    | ppb   | Limit of detection. It is the average in 3.5 minutes.        |
 
-### (2) Background information
+### Background information
 
 Season:
 
@@ -48,5 +48,17 @@ Season:
 
 Location: S $2\degree 08.756'$, W $59 \degree 00.335'$
 
-[Amazon Tall Tower Observatory (ATTO)](https://attoproject.org)
+Project: [Amazon Tall Tower Observatory (ATTO)](https://attoproject.org)
+
+
+
+
+
+Note:
+
+- [x] Make a validation set.
+- [ ] Multi-test statistic correction. Benjamini Hochberg correction
+- [ ] Train again on different lengths of moving windows.
+- [ ] Train again on different sampling frequencies.
+- [ ] Validation method: Use the trained LSTM to predict other small time periods.
 

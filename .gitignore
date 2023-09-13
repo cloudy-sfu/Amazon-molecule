@@ -154,3 +154,4 @@ raw/*
 !raw/.placeholder
 results/*
 !results/.placeholder
+.run
