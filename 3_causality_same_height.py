@@ -16,7 +16,6 @@ dataset_name = 'default_15min'
 
 # %% Load data.
 ts_train_valid, ts_test = pd.read_pickle(f'raw/1_{dataset_name}_std.pkl')
-ts_train, ts_valid = train_test_split(ts_train_valid, train_size=0.9, random_state=7056)
 
 # %% Split by height.
 cols = ts_train_valid.columns
@@ -51,8 +50,9 @@ tf.keras.utils.set_random_seed(5576)  # not fully repeatable, randomness still o
 
 # %% Infer causal network per height.
 for height, cols_this_height in cols_grouped_height.items():
-    x_train, y_train = moving_window(ts_train[cols_this_height].values, k=lag)
-    x_valid, y_valid = moving_window(ts_valid[cols_this_height].values, k=lag)
+    x_train_valid, y_train_valid = moving_window(ts_train_valid[cols_this_height].values, k=lag)
+    x_train, x_valid, y_train, y_valid = train_test_split(
+        x_train_valid, y_train_valid, train_size=0.9, random_state=6637)
     x_test, y_test = moving_window(ts_test[cols_this_height].values, k=lag)
 
     # Build model
@@ -87,8 +87,6 @@ for height, cols_this_height in cols_grouped_height.items():
         # Train model
         ur = tf.keras.models.clone_model(basic_model)
         ur.compile(optimizer='adam', loss='mse')
-        # In Granger causality, it's allowed to use testing set to tune hyperparameter, because model performance is
-        # evaluated and compared in causal network, instead of just testing error.
         sbm_ur = tf.keras.callbacks.ModelCheckpoint(f'raw/3_{dataset_name}_nn_{lag}/{height}_{i}_{j}_ur.h5',
             save_best_only=True)
         ur.fit(x_train_ur, y_train_ur, validation_data=(x_valid_ur, y_valid_ur), epochs=5000, batch_size=10000,

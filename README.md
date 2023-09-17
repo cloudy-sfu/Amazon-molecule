@@ -51,14 +51,3 @@ Location: S $2\degree 08.756'$, W $59 \degree 00.335'$
 Project: [Amazon Tall Tower Observatory (ATTO)](https://attoproject.org)
 
 
-
-
-
-Note:
-
-- [x] Make a validation set.
-- [ ] Multi-test statistic correction. Benjamini Hochberg correction
-- [ ] Train again on different lengths of moving windows.
-- [ ] Train again on different sampling frequencies.
-- [ ] Validation method: Use the trained LSTM to predict other small time periods.
-
