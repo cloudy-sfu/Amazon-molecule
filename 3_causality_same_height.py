@@ -4,6 +4,7 @@ from collections import defaultdict
 import numpy as np
 import tensorflow as tf
 from keras.layers import *
+from keras.backend import clear_session
 from scipy.stats import wilcoxon
 from tqdm import tqdm
 from itertools import product
@@ -111,6 +112,9 @@ for height, cols_this_height in cols_grouped_height.items():
         wilcoxon_results = wilcoxon(x=err_r, y=err_ur, method='approx', alternative='greater')
         w_val[height][i, j] = wilcoxon_results.statistic
         p_val[height][i, j] = wilcoxon_results.pvalue
+
+        # TensorFlow's garbage collection
+        clear_session()
 
 # %% Export.
 pd.to_pickle(w_val, f'raw/3_{dataset_name}_w_{lag}.pkl')
