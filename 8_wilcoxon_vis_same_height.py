@@ -5,11 +5,11 @@ import numpy as np
 from collections import defaultdict
 
 # %% Constant.
-dataset_name = 'default_1h'
+dataset_name = 'default_4h'
 lag = 12
 
 # %% Load data.
-p_val = pd.read_pickle(f'raw/3_{dataset_name}_p_{lag}.pkl')
+p_val = pd.read_pickle(f'raw/7_{dataset_name}_p_{lag}.pkl')
 
 # %% Initialization.
 @np.vectorize
@@ -37,5 +37,5 @@ for height, p0 in p_val.items():
     ax.set_yticklabels(cols_grouped_height[height], rotation=0)
     fig.subplots_adjust(bottom=0.15, top=0.95, left=0.10, right=1)
     sns.set_style({'xtick.bottom': True}, {'ytick.left': True})
-    fig.savefig(f'results/4_{dataset_name}_p_{lag}_{height}.eps')
+    fig.savefig(f'results/8_{dataset_name}_p_{lag}_{height}.eps')
     plt.close(fig)

@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 # %% Constants.
-dataset_name = 'default_daily'
+dataset_name = 'default_4h'
 
 # %% Load data.
 with open("subset_time_range.yaml", "r") as f:
