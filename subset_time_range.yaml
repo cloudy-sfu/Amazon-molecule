@@ -1,0 +1,24 @@
+default_15min:
+  start_date: 2019-10-14
+  end_date: 2020-02-10
+  start_timestamp: 1571059990
+  end_timestamp: 1581375975
+  sampling_seconds: 900
+default_daily:
+  start_date: 2019-10-14
+  end_date: 2020-02-10
+  start_timestamp: 1571059990
+  end_timestamp: 1581375975
+  sampling_seconds: 86400
+default_1h:
+  start_date: 2019-10-14
+  end_date: 2020-02-10
+  start_timestamp: 1571059990
+  end_timestamp: 1581375975
+  sampling_seconds: 3600
+default_4h:
+  start_date: 2019-10-14
+  end_date: 2020-02-10
+  start_timestamp: 1571059990
+  end_timestamp: 1581375975
+  sampling_seconds: 14400
