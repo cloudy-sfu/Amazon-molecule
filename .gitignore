@@ -155,3 +155,4 @@ raw/*
 results/*
 !results/.placeholder
 .run
+scripts
