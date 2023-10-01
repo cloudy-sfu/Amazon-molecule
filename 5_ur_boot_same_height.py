@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 # %% Constants.
 lag = 96
 dataset_name = 'default_15min'
-n_boot = 400
+n_boot = 1000
 
 # %% Load data.
 ts_train_valid, ts_test = pd.read_pickle(f'raw/1_{dataset_name}_std.pkl')
@@ -38,17 +38,17 @@ def moving_window(ts, k):
 
 # %% Initialization.
 os.makedirs(f'raw/5_{dataset_name}_nn_{lag}', exist_ok=True)
-
-pbar = tqdm(
-    total=sum(len(x) for x in cols_grouped_height.values()) * n_boot - \
-        len(os.listdir(f'raw/5_{dataset_name}_nn_{lag}/'))
-)
+pbar = tqdm(total=sum(len(x) for x in cols_grouped_height.values()), desc='Overall')
 stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=100, start_from_epoch=100)
 # strategy = tf.distribute.MirroredStrategy()
 
-def count_models(fh, fj):
-    existed_fp = os.listdir(f'raw/5_{dataset_name}_nn_{lag}/')
-    return sum(map(lambda fp: fp.startswith(f'{fh}_{fj}_'), existed_fp))
+def check_progress(fh, fj):
+    incomplete = []
+    for fb in range(n_boot):
+        path = f'raw/5_{dataset_name}_nn_{lag}/{fh}_{fj}_{fb}_ur.h5'
+        if not os.path.exists(path):
+            incomplete.append(path)
+    return incomplete
 
 # %% Infer causal network per height.
 for height, cols_this_height in cols_grouped_height.items():
@@ -69,12 +69,15 @@ for height, cols_this_height in cols_grouped_height.items():
     init_weights = ur.get_weights()
 
     for j in range(x_train.shape[2]):
-        for b in range(n_boot):
-            if os.path.exists(f'raw/5_{dataset_name}_nn_{lag}/{height}_{j}_{b}_ur.h5'):
-                break
+        ur_paths = check_progress(height, j)
+        for ur_path in tqdm(ur_paths, desc=f'{height}_{j}'):
+            if os.path.exists(ur_path):
+                continue
+            else:
+                with open(ur_path, 'w'):
+                    pass
             ur.set_weights(init_weights)
-            sbm_ur = tf.keras.callbacks.ModelCheckpoint(
-                f'raw/5_{dataset_name}_nn_{lag}/{height}_{j}_{b}_ur.h5', save_best_only=True)
+            sbm_ur = tf.keras.callbacks.ModelCheckpoint(ur_path, save_best_only=True)
             ur.fit(x_train, y_train[:, j], validation_data=(x_valid, y_valid[:, j]), epochs=5000, batch_size=10000,
                    callbacks=[stop_early, sbm_ur], verbose=0)
-            pbar.update(1)
+        pbar.update(1)

@@ -59,9 +59,15 @@ for height, cols_this_height in cols_grouped_height.items():
     for i, j in product(range(x_train.shape[2]), repeat=2):
         if i == j:
             continue
-        if os.path.exists(f'raw/3_{dataset_name}_nn_{lag}/{height}_{i}_{j}_r.h5'):
-            # when R exists, UR (prior to R) must exist
+        ur_path = f'raw/3_{dataset_name}_nn_{lag}/{height}_{i}_{j}_ur.h5'
+        r_path = f'raw/3_{dataset_name}_nn_{lag}/{height}_{i}_{j}_r.h5'
+        if os.path.exists(ur_path) or os.path.exists(r_path):
             continue
+        else:
+            with open(ur_path, 'w'):  # placeholders
+                pass
+            with open(r_path, 'w'):
+                pass
 
         # Make dataset
         x_train_ur = x_train
@@ -79,16 +85,14 @@ for height, cols_this_height in cols_grouped_height.items():
         # Train model
         ur = tf.keras.models.clone_model(basic_model)
         ur.compile(optimizer='adam', loss='mse')
-        sbm_ur = tf.keras.callbacks.ModelCheckpoint(f'raw/3_{dataset_name}_nn_{lag}/{height}_{i}_{j}_ur.h5',
-                                                    save_best_only=True)
+        sbm_ur = tf.keras.callbacks.ModelCheckpoint(ur_path, save_best_only=True)
         ur.fit(x_train_ur, y_train_ur, validation_data=(x_valid_ur, y_valid_ur), epochs=5000, batch_size=10000,
                callbacks=[stop_early, sbm_ur], verbose=0)
         pbar.update(1)
 
         r = tf.keras.models.clone_model(basic_model)
         r.compile(optimizer='adam', loss='mse')
-        sbm_r = tf.keras.callbacks.ModelCheckpoint(f'raw/3_{dataset_name}_nn_{lag}/{height}_{i}_{j}_r.h5',
-                                                   save_best_only=True)
+        sbm_r = tf.keras.callbacks.ModelCheckpoint(r_path, save_best_only=True)
         r.fit(x_train_r, y_train_r, validation_data=(x_valid_r, y_valid_r), epochs=5000, batch_size=10000,
               callbacks=[stop_early, sbm_r], verbose=0)
         pbar.update(1)
