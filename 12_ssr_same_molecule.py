@@ -10,21 +10,26 @@ from tqdm import tqdm
 import joblib
 import contextlib
 from datetime import datetime
+from itertools import product
 
 # %% Constants.
 lag = 96
 dataset_name = 'default_15min'
-n_boot = 700
+n_boot = 200
 
 # %% Load data.
 _, ts_test = pd.read_pickle(f'raw/1_{dataset_name}_std.pkl')
 
-# %% Split by height.
+# %% Split by mass.
 cols = ts_test.columns
 mass_heights = map(lambda x: x.split('_') + [x], cols)
-cols_grouped_height = defaultdict(list)
+cols_grouped_mass = defaultdict(list)
+all_possible_heights = []
 for mass, height, mass_height in mass_heights:
-    cols_grouped_height[height].append(mass_height)
+    cols_grouped_mass[mass].append(mass_height)
+    all_possible_heights.append(height)
+all_possible_heights = np.unique(all_possible_heights)
+heights_pair = list((fi, fj) for fi, fj in product(all_possible_heights, repeat=2) if fi != fj)
 
 # %% Moving Window.
 def moving_window(ts, k):
@@ -43,11 +48,10 @@ def moving_window(ts, k):
 
 # %% Initialization.
 rng = np.random.RandomState(6611)
-os.makedirs(f'results/6_{dataset_name}_p/', exist_ok=True)
-p_val = {height: np.full(shape=(len(x), len(x)), fill_value=np.nan)
-         for height, x in cols_grouped_height.items()}
-pbar = tqdm(total=sum(len(x)**2 for x in cols_grouped_height.values()) - len(cols), desc='Overall')
-log_path = f'raw/6_{dataset_name}_log_{lag}_{datetime.utcnow().strftime("%Y_%m_%d_%H_%M_%S")}'
+os.makedirs(f'results/12_{dataset_name}_p/', exist_ok=True)
+p_val = pd.DataFrame(index=cols_grouped_mass.keys(), columns=pd.MultiIndex.from_tuples(heights_pair), dtype=float)
+pbar = tqdm(total=sum(len(x) ** 2 for x in cols_grouped_mass.values()) - len(cols), desc='Overall')
+log_path = f'raw/12_{dataset_name}_log_{lag}_{datetime.utcnow().strftime("%Y_%m_%d_%H_%M_%S")}'
 
 @np.vectorize
 def decimal_non_zero(x):
@@ -85,15 +89,16 @@ def predict_1(model_path, x, y):
     mse = np.mean((y_hat.flatten() - y) ** 2)
     return mse
 
-for height, cols_this_height in cols_grouped_height.items():
-    x_test, y_test = moving_window(ts_test[cols_this_height].values, k=lag)
+for mass, cols_this_mass in cols_grouped_mass.items():
+    x_test, y_test = moving_window(ts_test[cols_this_mass].values, k=lag)
     n_series = x_test.shape[2]
+    cols_height = [col.split('_')[1] for col in cols_this_mass]
 
     for j in range(n_series):
         x_test_ur = x_test
         y_test_ur = y_test[:, j]
-        ur_paths = [f'raw/5_{dataset_name}_nn_{lag}/{height}_{j}_{b}_ur.h5' for b in range(n_boot)]
-        with tqdm_joblib(tqdm_object=tqdm(total=n_boot, desc=f'{height}_{j}')):
+        ur_paths = [f'raw/11_{dataset_name}_nn_{lag}/{mass}_{j}_{b}_ur.h5' for b in range(n_boot)]
+        with tqdm_joblib(tqdm_object=tqdm(total=n_boot, desc=f'{mass}_{j}')):
             mse_ur = joblib.Parallel(n_jobs=-1)(
                 joblib.delayed(predict_1)(ur_path, x_test_ur, y_test_ur) for ur_path in ur_paths
             )
@@ -102,7 +107,7 @@ for height, cols_this_height in cols_grouped_height.items():
         mse_nan_n = np.sum(mse_nan).astype(int)
         if mse_nan_n > 0:
             with open(log_path, 'a') as f:
-                f.write(f'height={height}, dependent={j}, #nan={mse_nan_n}.\n')
+                f.write(f'height={mass}, dependent={j}, #nan={mse_nan_n}.\n')
             mse_ur = mse_ur[~mse_nan]
 
         for i in range(n_series):
@@ -111,27 +116,27 @@ for height, cols_this_height in cols_grouped_height.items():
             x_test_r = x_test.copy()
             rng.shuffle(x_test_r[:, :, i])
             y_test_r = y_test_ur
-            mse_r = predict_1(f'raw/3_{dataset_name}_nn_{lag}/{height}_{i}_{j}_r.h5', x_test_r, y_test_r)
+            mse_r = predict_1(f'raw/9_{dataset_name}_nn_{lag}/{mass}_{i}_{j}_r.h5', x_test_r, y_test_r)
             if np.isnan(mse_r):
                 with open(log_path, 'a') as f:
-                    f.write(f'height={height}, dependent={j}, independent={i}, error=R model doesn\'t exist.\n')
-                p_val[height][i, j] = np.nan
+                    f.write(f'height={mass}, dependent={j}, independent={i}, error=R model doesn\'t exist.\n')
+                p_val.loc[mass, (cols_height[i], cols_height[j])] = np.nan
             else:
-                p_val[height][i, j] = np.mean(mse_r < mse_ur)  # H_0: SSR_r > SSR_ur
+                p_val.loc[mass, (cols_height[i], cols_height[j])] = np.mean(mse_r < mse_ur)  # H_0: SSR_r > SSR_ur
             pbar.update(1)
 
-    fig, ax = plt.subplots(figsize=(7.5, 6))
-    mask = np.zeros_like(p_val[height], dtype=bool)
-    mask[np.diag_indices_from(mask)] = True
-    heatmap = sns.heatmap(p_val[height], mask=mask, square=True, linewidths=.5, cmap='coolwarm',
-                          vmin=0, vmax=0.1, annot=decimal_non_zero(p_val[height]), fmt='', ax=ax)
-    ax.set_ylabel('Cause')
-    ax.set_xlabel('Effect')
-    ax.set_xticklabels(cols_grouped_height[height], rotation=45)
-    ax.set_yticklabels(cols_grouped_height[height], rotation=0)
-    fig.subplots_adjust(bottom=0.15, top=0.95, left=0.10, right=1)
-    sns.set_style({'xtick.bottom': True}, {'ytick.left': True})
-    fig.savefig(f'results/6_{dataset_name}_p/{lag}_{height}.eps')
-    plt.close(fig)
+# %% Heatmap.
+fig, ax = plt.subplots(figsize=(0.75 * p_val.shape[1], 0.5 * p_val.shape[0] + 1))
+heatmap = sns.heatmap(p_val.values, square=True, linewidths=.5, cmap='coolwarm', vmin=0, vmax=0.1,
+                      annot=decimal_non_zero(p_val.values), fmt='', ax=ax)
+ax.set_ylabel('Mass')
+ax.set_xlabel('(Cause, Effect)')
+ax.set_xticklabels(p_val.columns, rotation=45)
+ax.set_yticklabels(p_val.index, rotation=0)
+fig.subplots_adjust(bottom=0.2, top=0.95, left=0.05, right=0.95)
+sns.set_style({'xtick.bottom': True}, {'ytick.left': True})
+fig.savefig(f'results/12_{dataset_name}_p_{lag}.eps')
+plt.close(fig)
 
-pd.to_pickle(p_val, f'raw/6_{dataset_name}_p_{lag}.pkl')
+# %% Export.
+pd.to_pickle(p_val, f'raw/12_{dataset_name}_p_{lag}.pkl')
