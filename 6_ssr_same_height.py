@@ -14,7 +14,7 @@ from datetime import datetime
 # %% Constants.
 lag = 96
 dataset_name = 'default_15min'
-n_boot = 700
+n_boot = 1000
 
 # %% Load data.
 _, ts_test = pd.read_pickle(f'raw/1_{dataset_name}_std.pkl')

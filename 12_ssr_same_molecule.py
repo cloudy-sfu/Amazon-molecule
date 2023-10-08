@@ -15,7 +15,7 @@ from itertools import product
 # %% Constants.
 lag = 96
 dataset_name = 'default_15min'
-n_boot = 200
+n_boot = 400
 
 # %% Load data.
 _, ts_test = pd.read_pickle(f'raw/1_{dataset_name}_std.pkl')
