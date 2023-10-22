@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.stats import ncx2, chi2
+from scipy.stats import ncx2
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 
@@ -57,64 +57,28 @@ def draw(samples, estimated):
     ax2.set_ylim([0, None])
     return fig
 
-def profile_df_neg_lld(var, nc, x, objective):
+def profile_nc_neg_lld(var, df, x):
     """
     Profile
-    :param var: array (1): [degree of freedom]
-    :param nc: non-centrality parameter (fixed to point estimate)
+    :param var: array (1): non-centrality parameter (fixed to point estimate)
+    :param df: degree of freedom
     :param x: samples
-    :param objective: the objective log-likelihood value to fit
     :return: gap between profile log-likelihood and objective
     """
-    prob = ncx2.logpdf(x, var[0], nc)
+    prob = ncx2.logpdf(x, df, var[0])
     prob[prob == np.inf] = - np.inf  # `logpdf` doesn't distinguish +- inf.
-    return np.abs(- np.mean(prob) - objective)
+    return - np.mean(prob)
 
-def p_df_estimate(samples, max_lld, profile_param):
-    """
-    Get p-value of log-likelihood Wilk's theorem based test.
-     H_0: estimated_param != profile_param (caution: unusual definition)
-     H_1: estimated_param == profile_param
-    :param samples: data samples
-    :param max_lld: max log-likelihood value under null hypothesis
-    :param profile_param: parameters under alternative hypothesis (profile log-likelihood)
-    :return: p-value
-    """
-    # L_p(df) = L_p(df*) + 1/2 * chi2(alpha, df=p)
-    d = (neg_lld(profile_param, samples) - max_lld) * 2
-    # diminish max_lld estimate error: profile neg_LLD < min neg_LLD (MLE)
-    d = np.maximum(d, 0)
-    p = 1 - chi2.cdf(d, 1)
-    return p
-
-
-def ci_df_estimate(samples, estimated, max_lld, alpha=0.95):
-    """
-    Confidence interval of parameter 'df'.
-    :param max_lld: max log-likelihood value under point estimate
-    :param samples: data samples
-    :param estimated: point estimate of parameters
-    :param alpha: confidence level
-    :return: Confidence interval of parameter 'df'.
-    """
-    n = samples.shape[0]
-    # L_p(df) = L_p(df*) + 1/2 * chi2(alpha, df=p)
-    objective = max_lld + 0.5 * chi2.ppf(alpha, n) / n
-    lower_bound = minimize(
-        fun=profile_df_neg_lld,
-        x0=np.array([1e-10]),
-        args=(estimated[1], samples, objective),  # 'nc' is fixed.
-        method='Nelder-Mead',
-        bounds=[(1e-10, estimated[0])]
-    )
-    upper_bound = minimize(
-        fun=profile_df_neg_lld,
-        x0=np.array([estimated[0]]),
-        args=(estimated[1], samples, objective),  # 'nc' is fixed.
-        method='Nelder-Mead',
-        bounds=[(estimated[0], None)]
+def profile_nc_estimate(samples, df):
+    result = minimize(
+        fun=profile_nc_neg_lld,
+        x0=np.array([0]),
+        args=(df, samples),
+        method='L-BFGS-B',
+        bounds=[(0, None)]
     )
     return {
-        'CI': (lower_bound.x[0], upper_bound.x[0]),
-        'error': (lower_bound.fun, upper_bound.fun),
+        'param': result.x,
+        'variance': - result.hess_inv.todense(),
+        'neg_lld': result.fun,
     }
