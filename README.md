@@ -97,16 +97,15 @@ Proton Transfer Reaction Mass Spectrometer (PTR-MS)
 | Name      | Type    | Unit | Description                                                  |
 | --------- | ------- | ---- | ------------------------------------------------------------ |
 | timestamp | integer | s    | UNIX timestamp. The time zone is UTC-4, with no daylight saving time. |
-| M1\~M16   | real    | ppb  | Parts per billion of different molecular mass. The machine analyzes the gas sample every 20 seconds, and this value is their average in 5 minutes. |
+| M1\~M16   | real    | ppb  | Parts per billion. The machine analyzes the gas sample every 20 seconds, and this value is their average in 5 minutes. |
 | height    | integer | m    | Altitude of where the machine is located.                    |
 
 **mass**
 
-| Name     | Type | Unit  | Description                                                  |
-| -------- | ---- | ----- | ------------------------------------------------------------ |
-| col_name | text |       | Column name in PTRMS table.                                  |
-| mass     | real | g/mol | Molecular mass. The weighted mean of isotope by their portion in the gas sample. |
-
+| Name     | Type | Unit | Description                                                  |
+| -------- | ---- | ---- | ------------------------------------------------------------ |
+| col_name | text |      | Column name in PTRMS table.                                  |
+| mass     | real | Da/e | Mass-to-charge ratio. 1 Da = ${1\over 12} m( ^{12}C)$, e is the [elementary charge](https://en.wikipedia.org/wiki/Elementary_charge). |
 
 **LOD_profile**
 
@@ -114,7 +113,7 @@ Limit of detection (profile 3.5min)
 
 | Name           | Type    | Unit  | Description                                                  |
 | -------------- | ------- | ----- | ------------------------------------------------------------ |
-| mass           | real    | g/mol | Molecular mass.                                              |
+| mass           | real    | g/mol | Mass-to-charge ratio.                                        |
 | timestamp_from | integer | s     | UNIX timestamp. It corresponds to the start of the applied limit of detection in `value` column. |
 | timestamp_to   | integer | s     | UNIX timestamp. It corresponds to the end of the applied limit of detection in `value` column. |
 | value          | real    | ppb   | Limit of detection. It is an average of 3.5 minutes.         |
