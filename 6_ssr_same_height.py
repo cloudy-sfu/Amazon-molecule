@@ -117,7 +117,7 @@ for height, cols_this_height in cols_grouped_height.items():
                     f.write(f'height={height}, dependent={j}, independent={i}, error=R model doesn\'t exist.\n')
                 p_val[height][i, j] = np.nan
             else:
-                p_val[height][i, j] = np.mean(mse_r < mse_ur)  # H_0: SSR_r > SSR_ur
+                p_val[height][i, j] = np.mean(mse_r < mse_ur)  # H_0: SSR_r <= SSR_ur
             pbar.update(1)
 
     fig, ax = plt.subplots(figsize=(7.5, 6))
