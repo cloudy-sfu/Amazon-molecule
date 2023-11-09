@@ -122,7 +122,7 @@ for mass, cols_this_mass in cols_grouped_mass.items():
                     f.write(f'height={mass}, dependent={j}, independent={i}, error=R model doesn\'t exist.\n')
                 p_val.loc[mass, (cols_height[i], cols_height[j])] = np.nan
             else:
-                p_val.loc[mass, (cols_height[i], cols_height[j])] = np.mean(mse_r < mse_ur)  # H_0: SSR_r > SSR_ur
+                p_val.loc[mass, (cols_height[i], cols_height[j])] = np.mean(mse_r < mse_ur)  # H_0: SSR_r <= SSR_ur
             pbar.update(1)
 
 # %% Heatmap.
