@@ -2,7 +2,6 @@ import pandas as pd
 from statsmodels.tsa.stattools import adfuller, pacf, acf
 import numpy as np
 import matplotlib.pyplot as plt
-from statsmodels.tsa.arima.model import ARIMA
 
 # %% Load data.
 default_15min_train, default_15min_test = pd.read_pickle(f'raw/1_default_15min_std.pkl')
@@ -35,7 +34,7 @@ acf_.to_excel(f'results/2_default_15min_acf.xlsx', index_label='Lag')
 # %% ACF line plot.
 heights, heights_count = np.unique([x.split('_h')[1] for x in acf_.columns], return_counts=True)
 n_heights = heights.shape[0]
-fig, axes = plt.subplots(nrows=n_heights, figsize=(12, 16))
+fig, axes = plt.subplots(nrows=n_heights, figsize=(9, 12))
 heights_count_cumsum = np.cumsum(heights_count)
 for i in range(n_heights):
     ax = axes[i]

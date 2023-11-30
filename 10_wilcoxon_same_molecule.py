@@ -1,4 +1,3 @@
-import os
 from collections import defaultdict
 from copy import deepcopy
 import numpy as np
@@ -9,10 +8,15 @@ from tqdm import tqdm
 import seaborn as sns
 import matplotlib.pyplot as plt
 from itertools import product
+from argparse import ArgumentParser
 
 # %% Constants.
-lag = 96
-dataset_name = 'default_15min'
+parser = ArgumentParser()
+parser.add_argument('--lag', type=int)
+parser.add_argument('--dataset_name', type=str)
+command, _ = parser.parse_known_args()
+lag = command.lag
+dataset_name = command.dataset_name
 
 # %% Load data.
 _, ts_test = pd.read_pickle(f'raw/1_{dataset_name}_std.pkl')
@@ -69,8 +73,15 @@ for mass, cols_this_mass in cols_grouped_mass.items():
         y_test_r = y_test_ur
 
         # Load model
-        ur = tf.keras.models.load_model(f'raw/9_{dataset_name}_nn_{lag}/{mass}_{i}_{j}_ur.h5')
-        r = tf.keras.models.load_model(f'raw/9_{dataset_name}_nn_{lag}/{mass}_{i}_{j}_r.h5')
+        try:
+            ur = tf.keras.models.load_model(f'raw/9_{dataset_name}_nn_{lag}/{mass}_{i}_{j}_ur.h5')
+            r = tf.keras.models.load_model(f'raw/9_{dataset_name}_nn_{lag}/{mass}_{i}_{j}_r.h5')
+        except OSError:
+            w_val.loc[mass, (cols_height[i], cols_height[j])] = np.nan
+            p_val.loc[mass, (cols_height[i], cols_height[j])] = np.nan
+            print(f'[Warning] {mass}, {cols_height[i]}, {cols_height[j]} models are broken.')
+            pbar.update(1)
+            continue
 
         # Use model to predict
         y_test_ur_hat = ur.predict(x_test_ur, batch_size=x_test.shape[0], verbose=0)

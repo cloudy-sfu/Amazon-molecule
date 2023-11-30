@@ -2,11 +2,11 @@
 
 Granger causality inference of PTR-MS measurement from ATTO project
 
-![](https://shields.io/badge/dependencies-Python_3.11-blue?style=flat-square)
-![](https://shields.io/badge/dependencies-CUDA_11.8-green?style=flat-square)
-![](https://shields.io/badge/dependencies-CuDNN_8.6.0-green?style=flat-square)
-![](https://shields.io/badge/device-NVIDIA_GeForce_RTX_4090-green?style=flat-square)
-![](https://shields.io/badge/OS-Ubuntu_22.04-lightgrey?style=flat-square)
+![](https://shields.io/badge/dependencies-Python_3.10-blue)
+![](https://shields.io/badge/dependencies-CUDA_11.8-green)
+![](https://shields.io/badge/dependencies-CuDNN_8.6.0-green)
+![](https://shields.io/badge/device-NVIDIA_GeForce_RTX_4090-green)
+![](https://shields.io/badge/OS-Ubuntu_22.04-lightgrey)
 
 ## Devices
 
@@ -26,15 +26,15 @@ With the above equipment, I recommend parallel 5 script instances of scripts tha
 
 ## Acknowledgments
 
-Rosol's [Nonlincausality](https://github.com/mrosol/Nonlincausality) is modified, under MIT license, copied to `method_rosol2022`.
+Rosol's [Nonlincausality](https://github.com/mrosol/Nonlincausality) is copied to `method_rosol2022` and modified under MIT license.
 
 ## Usage
 
 To replicate my experiments, please run scripts in order of the number prefix. 
 
-Some scripts include the symbol `# %%`, which means a section in [JetBrains PyCharm Professional](https://www.jetbrains.com/pycharm/promo/), which is equivalent to a cell in Jupyter Notebook. Without special instructions below, users can run either one by one section or the whole script. The simplest way to run one by one section is to copy the code of a section to the Python interpreter, and to press 'Enter' to run. After one section is finished, run the next one. I don't use the Jupyter notebook version, because some users don't have a Jupyter notebook environment. They cannot read the notebook easily, but can still paste interactive code to the Python interpreter. It is not easy to use Google Colab, because data is from local machines instead of URLs on the Internet like Yahoo! Finance.
+Some scripts include the symbol `# %%`, meaning a section in JetBrains PyCharm Professional, equivalent to a cell in Jupyter Notebook. Users can run either one by one section or the whole script without the special instructions below. The simplest way to run sections one by one, is to copy the code of a section to the Python interpreter, and press 'Enter' to run. After one section is finished, run the next one. I don't use the Jupyter notebook version, because some users don't have a Jupyter notebook environment. They cannot read the notebook easily, but can still paste interactive code to the Python interpreter. It is not easy to use Google Colab, because data is from local machines instead of URLs on the Internet like Yahoo! Finance.
 
-The following scripts support parallel computing acceleration. Users can run `python $script_name` within multiple `screen` instances. If their tasks are the same, each thread will skip the iterations in the main `for` loop, which another thread is working on. If a thread is killed, it has already saved the models they already trained, and can continue its task. If more threads join halfway, they can work on the remaining iterations in the main `for` loop and accelerate the overall progress.
+The following scripts support parallel computing acceleration. Users can run `python $script_name` within multiple `screen` instances. If their tasks are the same, each thread will skip the iterations in the main `for` loop, which another thread is working on. If a thread is killed, it has already saved the models they have already trained and can continue its task. If more threads join halfway, they can work on the remaining iterations in the main `for` loop and accelerate the overall progress.
 
 ```
 3_causal_same_height.py
