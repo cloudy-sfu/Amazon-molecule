@@ -8,11 +8,18 @@ from mle import *
 import joblib
 import logging
 from scipy.stats import chi2
+from argparse import ArgumentParser
 
 # %% Constants.
-lag = 96
-dataset_name = 'default_15min'
-n_boot = 200  # number of bootstrapping when estimating 'ncx2' dof.
+parser = ArgumentParser()
+parser.add_argument('--lag', type=int)
+parser.add_argument('--dataset_name', type=str)
+parser.add_argument('--n_boot', type=int, default=200,
+                    help="number of bootstrapping when estimating 'ncx2' dof.")
+command, _ = parser.parse_known_args()
+lag = command.lag
+dataset_name = command.dataset_name
+n_boot = command.n_boot
 
 # %% Load data.
 _, ts_test = pd.read_pickle(f'raw/1_{dataset_name}_std.pkl')

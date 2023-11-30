@@ -7,10 +7,15 @@ from keras.layers import *
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 from itertools import product
+from argparse import ArgumentParser
 
 # %% Constants.
-lag = 96
-dataset_name = 'default_15min'
+parser = ArgumentParser()
+parser.add_argument('--lag', type=int)
+parser.add_argument('--dataset_name', type=str)
+command, _ = parser.parse_known_args()
+lag = command.lag
+dataset_name = command.dataset_name
 
 # %% Load data.
 ts_train_valid, _ = pd.read_pickle(f'raw/1_{dataset_name}_std.pkl')

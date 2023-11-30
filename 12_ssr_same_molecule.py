@@ -126,14 +126,14 @@ for mass, cols_this_mass in cols_grouped_mass.items():
             pbar.update(1)
 
 # %% Heatmap.
-fig, ax = plt.subplots(figsize=(0.75 * p_val.shape[1], 0.5 * p_val.shape[0] + 1))
-heatmap = sns.heatmap(p_val.values, square=True, linewidths=.5, cmap='coolwarm', vmin=0, vmax=0.1,
-                      annot=decimal_non_zero(p_val.values), fmt='', ax=ax)
-ax.set_ylabel('Mass')
-ax.set_xlabel('(Cause, Effect)')
-ax.set_xticklabels(p_val.columns, rotation=45)
-ax.set_yticklabels(p_val.index, rotation=0)
-fig.subplots_adjust(bottom=0.2, top=0.95, left=0.05, right=0.95)
+fig, ax = plt.subplots(figsize=(9, 4))
+heatmap = sns.heatmap(p_val.values.T, square=True, linewidths=.5, cmap='coolwarm', vmin=0, vmax=0.1,
+                      annot=decimal_non_zero(p_val.values.T), fmt='', ax=ax)
+ax.set_xlabel('m/Q')
+ax.set_ylabel('(Cause, Effect)')
+ax.set_yticklabels(p_val.columns, rotation=0)
+ax.set_xticklabels(p_val.index, rotation=0)
+fig.subplots_adjust(left=0.16, right=1.05, bottom=0.05, top=0.95)
 sns.set_style({'xtick.bottom': True}, {'ytick.left': True})
 fig.savefig(f'results/12_{dataset_name}_p_{lag}.eps')
 plt.close(fig)
